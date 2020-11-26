@@ -2,7 +2,9 @@
 
 [![npm](https://img.shields.io/npm/v/next-api-router.svg)](https://www.npmjs.com/package/next-api-router)
 [![npm](https://img.shields.io/npm/dm/next-api-router.svg)](https://www.npmjs.com/package/next-api-router)
-[![Node.js Version](https://img.shields.io/node/v/next-api-router.svg?style=flat)](http://nodejs.org/download/)
+[![Node.js Version](https://img.shields.io/node/v/next-api-router.svg?style=flat)](http://nodejs.org/download/)  
+
+Simple and intuitive configuration of Next.js' api routing.
 
 ## Installation
 ```
