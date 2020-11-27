@@ -46,8 +46,8 @@ class NextApiRouter implements INextApiRouter {
     return apiMap;
   }
 
-  private errorResponse(req, res) {
-    res.status(500).send("error");
+  private errorResponse(req, res, status=500) {
+    res.status(status).send("error");
   }
 
   post(url: string, api: Function): INextApiRouter {
@@ -72,18 +72,18 @@ class NextApiRouter implements INextApiRouter {
 
   routes(): void {
     const targetMethodAPI = this.apiMap.get(this.method);
-    
+
     let variable = {};
     let targetAPI: Function;
     let request = this.request;
 
     try {
       targetMethodAPI.forEach((value, key) => {
-        const apiSlugs =  key.substr(1).split('/');
+        const apiSlugs =  key.replace(/^(\/api\/|\/)/, '').split('/');
         const apiSlugLen = apiSlugs.length;
 
         if(apiSlugLen !== this.slugs.length) return;
-        
+
         for(let i = 0; i < apiSlugLen; i++) {
           const nowApiSlug = apiSlugs[i];
           const nowSlug = this.slugs[i];
@@ -104,20 +104,18 @@ class NextApiRouter implements INextApiRouter {
               variable = {};
               return;
             }
-            
+
           }
         }
 
-        if(Object.keys(variable).length) {
-          request.query = { ...request.query, ...variable };
-        }
+        if(Object.keys(variable).length) request.query = { ...request.query, ...variable };
 
         targetAPI = value;
-
         throw new Error('break');
       });
     } catch {}
-    
+
+    if(!targetAPI) return this.errorResponse(request, this.response, 404);
     return targetAPI(request, this.response);
   }
 }

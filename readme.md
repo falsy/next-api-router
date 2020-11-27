@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/next-api-router.svg)](https://www.npmjs.com/package/next-api-router)
 [![npm](https://img.shields.io/npm/dm/next-api-router.svg)](https://www.npmjs.com/package/next-api-router)
-[![Node.js Version](https://img.shields.io/node/v/next-api-router.svg?style=flat)](http://nodejs.org/download/)  
+[![Node.js Version](https://img.shields.io/node/v/next-api-router.svg?style=flat)](http://nodejs.org/download/)
 
 Simple and intuitive configuration of Next.js' api routing.
 
@@ -19,7 +19,7 @@ import NextApiRouter from 'next-api-router'
 
 export default (req, res) => {
   const Router = new NextApiRouter(req, res)
-  
+
   Router.get('/test', (req, res) => {
     res.status(200).send(true)
   })
@@ -35,7 +35,7 @@ import NextApiRouter from 'next-api-router'
 
 export default (req: NextApiRequest, res: NextApiResponse) => {
   const Router = new NextApiRouter(req, res)
-  
+
   Router.get('/test', (req, res) => {
     res.status(200).send(true)
   })
@@ -81,15 +81,15 @@ import NextApiRouter from 'next-api-router'
 
 export default (req, res) => {
   const Router = new NextApiRouter(req, res)
-  
+
   Router
     .get('/apiUrlPath', (req, res) => {
       const { apple } = req.query
-      
+
       console.log(apple)
       // hello
-      
-      res.status(200)
+
+      res.status(200).send(true)
     })
 
     .get('/apiUrlPath/:orange', (req, res) => {
@@ -98,18 +98,42 @@ export default (req, res) => {
       console.log(orange)
       // world
 
-      res.status(200)
+      res.status(200).send(true)
     })
-    
+
     .post('/apiUrlPath', (req, res) => {
       const { banana } = JSON.parse(req.body)
 
       console.log(banana)
       // long
 
-      res.status(200)
+      res.status(200).send(true)
     })
 
   return Router.routes()
 }
 ```
+
+## Other
+### The first /api path can be omitted
+```js
+// [...slug].js
+...
+
+  const Router = new NextApiRouter(req, res)
+
+  Router.get('/api/apiUrlPath', (req, res) => { ... })
+
+...
+```
+```js
+// [...slug].js
+...
+
+  const Router = new NextApiRouter(req, res)
+
+  Router.get('/apiUrlPath', (req, res) => { ... })
+
+...
+```
+These two are the same
