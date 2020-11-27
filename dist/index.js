@@ -32,8 +32,9 @@ var NextApiRouter = /** @class */ (function () {
         apiMap.set('DELETE', this.deleteApiMap);
         return apiMap;
     };
-    NextApiRouter.prototype.errorResponse = function (req, res) {
-        res.status(500).send("error");
+    NextApiRouter.prototype.errorResponse = function (req, res, status) {
+        if (status === void 0) { status = 500; }
+        res.status(status).send("error");
     };
     NextApiRouter.prototype.post = function (url, api) {
         this.postApiMap.set(url, api);
@@ -59,7 +60,7 @@ var NextApiRouter = /** @class */ (function () {
         var request = this.request;
         try {
             targetMethodAPI.forEach(function (value, key) {
-                var apiSlugs = key.substr(1).split('/');
+                var apiSlugs = key.replace(/^(\/api\/|\/)/, '').split('/');
                 var apiSlugLen = apiSlugs.length;
                 if (apiSlugLen !== _this.slugs.length)
                     return;
@@ -82,14 +83,15 @@ var NextApiRouter = /** @class */ (function () {
                         }
                     }
                 }
-                if (Object.keys(variable).length) {
+                if (Object.keys(variable).length)
                     request.query = __assign(__assign({}, request.query), variable);
-                }
                 targetAPI = value;
                 throw new Error('break');
             });
         }
         catch (_a) { }
+        if (!targetAPI)
+            return this.errorResponse(request, this.response, 404);
         return targetAPI(request, this.response);
     };
     return NextApiRouter;
