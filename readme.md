@@ -13,8 +13,8 @@ npm install next-api-router
 
 ## Quick Start
 ### JavaScript
-/pages/api/`[...slug].js` (or /src/pages/api/`[...slug].js`)
 ```js
+// /pages/api/`[...slug].js` (or /src/pages/api/`[...slug].js`)
 import NextApiRouter from 'next-api-router'
 
 export default (req, res) => {
@@ -28,8 +28,8 @@ export default (req, res) => {
 }
 ```
 ### TypeScript
-/pages/api/`[...slug].ts` (or /src/pages/api/`[...slug].ts`)
 ```js
+// /pages/api/`[...slug].ts` (or /src/pages/api/`[...slug].ts`)
 import { NextApiRequest, NextApiResponse } from "next"
 import NextApiRouter from 'next-api-router'
 
@@ -56,14 +56,21 @@ import React, { useEffect } from 'react'
 const App = () => {
 
   useEffect(() => {
+
+    // First request
     fetch('/api/apiUrlPath?apple=hello')
+
+    // Second request
     fetch('/api/apiUrlPath/world')
+
+    // Third request
     fetch('/api/apiUrlPath', {
       method: 'post',
       body: JSON.stringify({
         banana: 'long'
       })
     })
+
   }, [])
 
   return (
@@ -75,14 +82,15 @@ export default App
 ```
 
 ### Server
-/pages/api/`[...slug].js` (or /src/pages/api/`[...slug].js`)
 ```js
+// /pages/api/`[...slug].js` (or /src/pages/api/`[...slug].js`)
 import NextApiRouter from 'next-api-router'
 
 export default (req, res) => {
   const Router = new NextApiRouter(req, res)
 
   Router
+    // First response processing
     .get('/apiUrlPath', (req, res) => {
       const { apple } = req.query
 
@@ -92,6 +100,7 @@ export default (req, res) => {
       res.status(200).send(true)
     })
 
+    // Second response processing
     .get('/apiUrlPath/:orange', (req, res) => {
       const { orange } = req.query
 
@@ -101,6 +110,7 @@ export default (req, res) => {
       res.status(200).send(true)
     })
 
+    // Third response processing
     .post('/apiUrlPath', (req, res) => {
       const { banana } = JSON.parse(req.body)
 
@@ -117,7 +127,7 @@ export default (req, res) => {
 ## Other
 ### The first /api path can be omitted
 ```js
-// [...slug].js
+// /pages/api/[...slug].js (or /src/pages/api/[...slug].js)
 ...
 
   const Router = new NextApiRouter(req, res)
@@ -127,7 +137,7 @@ export default (req, res) => {
 ...
 ```
 ```js
-// [...slug].js
+// /pages/api/[...slug].js (or /src/pages/api/[...slug].js)
 ...
 
   const Router = new NextApiRouter(req, res)
