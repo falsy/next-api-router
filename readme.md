@@ -14,7 +14,7 @@ npm install next-api-router
 ## Quick Start
 ### JavaScript
 ```js
-// /pages/api/`[...slug].js` (or /src/pages/api/`[...slug].js`)
+// /pages/api/[...slug].js (or /src/pages/api/[...slug].js)
 import NextApiRouter from 'next-api-router'
 
 export default (req, res) => {
@@ -29,7 +29,7 @@ export default (req, res) => {
 ```
 ### TypeScript
 ```js
-// /pages/api/`[...slug].ts` (or /src/pages/api/`[...slug].ts`)
+// /pages/api/[...slug].ts (or /src/pages/api/[...slug].ts)
 import { NextApiRequest, NextApiResponse } from "next"
 import NextApiRouter from 'next-api-router'
 
@@ -83,7 +83,7 @@ export default App
 
 ### Server
 ```js
-// /pages/api/`[...slug].js` (or /src/pages/api/`[...slug].js`)
+// /pages/api/[...slug].js (or /src/pages/api/[...slug].js)
 import NextApiRouter from 'next-api-router'
 
 export default (req, res) => {
