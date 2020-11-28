@@ -5,12 +5,12 @@
 [![Node.js Version](https://img.shields.io/node/v/next-api-router.svg?style=flat)](http://nodejs.org/download/)
 
 Simple and intuitive configuration of Next.js' api routing.
-
+  
 ## Installation
 ```
 npm install next-api-router
 ```
-
+  
 ## Quick Start
 ### JavaScript
 ```ts
@@ -43,12 +43,12 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
   return Router.routes()
 }
 ```
-
+  
 ## Possible HTTP methods
 `NextApiRouter.post()`, `NextApiRouter.get()`, `NextApiRouter.put()`, `NextApiRouter.delete()`
-
+  
 ## Example
-
+  
 ### Client
 ```ts
 import React, { useEffect } from 'react'
@@ -80,7 +80,7 @@ const App = () => {
 
 export default App
 ```
-
+  
 ### Server
 ```ts
 // /pages/api/[...slug].js (or /src/pages/api/[...slug].js)
@@ -123,9 +123,9 @@ export default (req, res) => {
   return Router.routes()
 }
 ```
-
+  
 ## Other
-### The first /api path can be omitted
+* The first `/api` path can be omitted
 ```ts
 // /pages/api/[...slug].js (or /src/pages/api/[...slug].js)
 ...
@@ -146,4 +146,16 @@ export default (req, res) => {
 
 ...
 ```
-These two are the same
+>> These two are the same
+  
+* `'slug'` cannot be used as a key for query string.
+```ts
+// /pages/api/[...slug].js (or /src/pages/api/[...slug].js)
+...
+
+  const Router = new NextApiRouter(req, res)
+
+  Router.get('/api/apiUrlPath/:slug', (req, res) => { ... })
+  // error
+...
+```
