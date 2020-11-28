@@ -16,7 +16,7 @@ $ npm install next-api-router
 $ npm test
 ```
   
-## Quick Start
+## Quick start
 ### JavaScript
 ```ts
 // /pages/api/[...slug].js (or /src/pages/api/[...slug].js)
@@ -151,7 +151,7 @@ export default (req, res) => {
 
 ...
 ```
->> These two are the same
+> These two are the same
   
 * `'slug'` cannot be used as a key for query string.
 ```ts
