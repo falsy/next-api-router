@@ -8,7 +8,12 @@ Simple and intuitive configuration of Next.js' api routing.
   
 ## Installation
 ```
-npm install next-api-router
+$ npm install next-api-router
+```
+
+## Running tests
+```
+$ npm test
 ```
   
 ## Quick Start
