@@ -8,115 +8,107 @@ interface INextApiRouter {
   routes(): void
 }
 
+interface IHashMap {
+  post: any
+  get: any
+  put: any
+  delete: any
+}
+
 class NextApiRouter implements INextApiRouter {
 
   private readonly response: NextApiResponse
   private readonly request: NextApiRequest
   private readonly method: string
   private readonly slugs: Array<string>
-  private readonly apiMap: Map<string, Map<string, Function>>
-  private postApiMap: Map<string, Function>
-  private getApiMap: Map<string, Function>
-  private putApiMap: Map<string, Function>
-  private deleteApiMap: Map<string, Function>
+  private readonly hashMap: IHashMap
 
   constructor(req: NextApiRequest, res: NextApiResponse) {
     const { method, query: { slug } } = req
 
     this.slugs = slug as Array<string>
-    this.method = method
+    this.method = method.toLowerCase()
     this.response = res
     this.request = req
-    this.apiMap = this.generateApiMap()
+    this.hashMap = {
+      get: {},
+      post: {},
+      put: {},
+      delete: {}
+    }
   }
 
-  private generateApiMap() {
-    const apiMap = new Map()
-
-    this.postApiMap = new Map()
-    this.getApiMap = new Map()
-    this.putApiMap = new Map()
-    this.deleteApiMap = new Map()
-
-    apiMap.set('POST', this.postApiMap)
-    apiMap.set('GET', this.getApiMap)
-    apiMap.set('PUT', this.putApiMap)
-    apiMap.set('DELETE', this.deleteApiMap)
-
-    return apiMap
+  private pathValidation(path: string) {
+    return /\/\:slug(\/)?/.test(path)
   }
 
-  private errorResponse(req, res, status=500) {
-    res.status(status).send("error")
+  private errorResponse(status: number) {
+    this.response.status(status).send("error")
+  }
+
+  private addRequestPathParams(url: string) {
+    const newRequest = { ...this.request }
+    url.replace(/^(\/api\/|\/)|(\/)$/g, '').split('/').forEach((path, i) => {
+      if(path[0] !== ':') return
+      const newQuery = { [path.substr(1)]: this.slugs[i] }
+      newRequest.query = { ...newRequest.query, ...newQuery}
+    })
+    return newRequest
+  }
+
+  private apiPathFilter(apiHashMap) {
+    return Object.keys(apiHashMap).filter((path: string) => {
+      const apiSlugs =  path.replace(/^(\/api\/|\/)|(\/)$/g, '').split('/')
+      const apiSlugLen = apiSlugs.length
+      
+      if(apiSlugLen !== this.slugs.length) return false
+      for(let i=0; i<apiSlugLen; i++) {
+        if(apiSlugs[i][0] !== ':' && apiSlugs[i] !== this.slugs[i]) return false
+      }
+      return true
+    })
   }
 
   post(url: string, api: Function): INextApiRouter {
-    this.postApiMap.set(url, api)
+    this.hashMap.post = { ...this.hashMap.post, [url]: api }
     return this
   }
 
   get(url: string, api: Function): INextApiRouter {
-    this.getApiMap.set(url, api)
+    this.hashMap.get = { ...this.hashMap.get, [url]: api }
     return this
   }
 
   put(url: string, api: Function): INextApiRouter {
-    this.putApiMap.set(url, api)
+    this.hashMap.put = { ...this.hashMap.put, [url]: api }
     return this
   }
 
   delete(url: string, api: Function): INextApiRouter {
-    this.deleteApiMap.set(url, api)
+    this.hashMap.delete = { ...this.hashMap.delete, [url]: api }
     return this
   }
 
   routes(): void {
-    const targetMethodAPI = this.apiMap.get(this.method)
+    const apiHashMap = this.hashMap?.[this.method] || {}
+    const filterApiPath = this.apiPathFilter(apiHashMap)
+    const targetApiLen = filterApiPath.length
+    
+    if(targetApiLen === 0) {
+      return this.errorResponse(404)
+    }
+    
+    const targetApiUrl = filterApiPath[targetApiLen - 1]
 
-    let variable = {}
-    let targetAPI: Function
-    let request = this.request
+    if(this.pathValidation(targetApiUrl)) {
+      console.error("'slug' cannot be used as a key for query string.")
+      return this.errorResponse(500)
+    }
 
-    try {
-      targetMethodAPI.forEach((value, key) => {
-        const apiSlugs =  key.replace(/^(\/api\/|\/)/, '').split('/')
-        const apiSlugLen = apiSlugs.length
-
-        if(apiSlugLen !== this.slugs.length) return
-
-        for(let i = 0; i < apiSlugLen; i++) {
-          const nowApiSlug = apiSlugs[i]
-          const nowSlug = this.slugs[i]
-
-          if(nowApiSlug[0] === ':') {
-            const varKey = nowApiSlug.substr(1)
-
-            if(varKey === 'slug') {
-              targetAPI = this.errorResponse
-              console.log(new Error("'slug' cannot be used as a key for query string."))
-              throw new Error("error")
-            }
-
-            variable[varKey] = nowSlug
-          } else {
-
-            if(nowApiSlug !== nowSlug) {
-              variable = {}
-              return
-            }
-
-          }
-        }
-
-        if(Object.keys(variable).length) request.query = { ...request.query, ...variable }
-
-        targetAPI = value
-        throw new Error('break')
-      })
-    } catch {}
-
-    if(!targetAPI) return this.errorResponse(request, this.response, 404)
-    return targetAPI(request, this.response)
+    const targetApi = apiHashMap[targetApiUrl]
+    const request = this.addRequestPathParams(targetApiUrl)
+    
+    return targetApi(request, this.response)
   }
 }
 

@@ -11,14 +11,12 @@ declare class NextApiRouter implements INextApiRouter {
     private readonly request;
     private readonly method;
     private readonly slugs;
-    private readonly apiMap;
-    private postApiMap;
-    private getApiMap;
-    private putApiMap;
-    private deleteApiMap;
+    private readonly hashMap;
     constructor(req: NextApiRequest, res: NextApiResponse);
-    private generateApiMap;
+    private pathValidation;
     private errorResponse;
+    private addRequestPathParams;
+    private apiPathFilter;
     post(url: string, api: Function): INextApiRouter;
     get(url: string, api: Function): INextApiRouter;
     put(url: string, api: Function): INextApiRouter;

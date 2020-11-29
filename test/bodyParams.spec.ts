@@ -25,46 +25,6 @@ describe('Next Api Router - Method POST', () => {
     resData = ''
   })
 
-  it('default', () => {
-    const req: any = {
-      method: 'POST',
-      query: {
-        slug: ['foo']
-      }
-    }
-
-    const nextApiRouter = new NextApiRouter(req, res)
-
-    nextApiRouter.post('/api/foo', (req, res) => {
-      res.status(200).send(true)
-    })
-
-    nextApiRouter.routes()
-    
-    expect(resStatus).toEqual(200)
-    expect(resData).toEqual(true)
-  })
-
-  it('default - omit api path', () => {
-    const req: any = {
-      method: 'POST',
-      query: {
-        slug: ['foo']
-      }
-    }
-
-    const nextApiRouter = new NextApiRouter(req, res)
-
-    nextApiRouter.post('/foo', (req, res) => {
-      res.status(200).send(true)
-    })
-
-    nextApiRouter.routes()
-    
-    expect(resStatus).toEqual(200)
-    expect(resData).toEqual(true)
-  })
-
   it('multiple paths - string body data', () => {
     const req: any = {
       method: 'POST',
@@ -120,29 +80,7 @@ describe('Next Api Router - Method POST', () => {
     })
   })
 
-  it('string params', () => {
-    const req: any = {
-      method: 'POST',
-      query: {
-        slug: ['foo'],
-        boo: 'booValue'
-      }
-    }
-
-    const nextApiRouter = new NextApiRouter(req, res)
-
-    nextApiRouter.post('/foo', (req, res) => {
-      const { boo } = req.query
-      res.status(200).send(boo)
-    })
-
-    nextApiRouter.routes()
-    
-    expect(resStatus).toEqual(200)
-    expect(resData).toEqual('booValue')
-  })
-
-  it('string params + string params + body params', () => {
+  it('path params + query params + body params', () => {
     const req: any = {
       method: 'POST',
       query: {

@@ -1,7 +1,7 @@
 import 'jest'
 import NextApiRouter from '../src'
 
-describe('Next Api Router - Method PUT', () => {
+describe('Next Api Router - Query String Params', () => {
   let resStatus: number
   let resData: any
 
@@ -27,7 +27,7 @@ describe('Next Api Router - Method PUT', () => {
 
   it('default', () => {
     const req: any = {
-      method: 'PUT',
+      method: 'GET',
       query: {
         slug: ['foo']
       }
@@ -35,7 +35,7 @@ describe('Next Api Router - Method PUT', () => {
 
     const nextApiRouter = new NextApiRouter(req, res)
 
-    nextApiRouter.put('/api/foo', (req, res) => {
+    nextApiRouter.get('/api/foo', (req, res) => {
       res.status(200).send(true)
     })
 
@@ -47,7 +47,7 @@ describe('Next Api Router - Method PUT', () => {
 
   it('default - omit api path', () => {
     const req: any = {
-      method: 'PUT',
+      method: 'GET',
       query: {
         slug: ['foo']
       }
@@ -55,7 +55,7 @@ describe('Next Api Router - Method PUT', () => {
 
     const nextApiRouter = new NextApiRouter(req, res)
 
-    nextApiRouter.put('/foo', (req, res) => {
+    nextApiRouter.get('/foo', (req, res) => {
       res.status(200).send(true)
     })
 
@@ -65,73 +65,37 @@ describe('Next Api Router - Method PUT', () => {
     expect(resData).toEqual(true)
   })
 
-  it('multiple paths - string body data', () => {
+  it('multiple paths', () => {
     const req: any = {
-      method: 'PUT',
+      method: 'GET',
       query: {
         slug: ['foo','boo']
-      },
-      body: 'bodyValue'
+      }
     }
 
     const nextApiRouter = new NextApiRouter(req, res)
 
-    nextApiRouter.put('/foo/boo', (req, res) => {
-      res.status(200).send(req.body)
+    nextApiRouter.get('/foo/boo', (req, res) => {
+      res.status(200).send(true)
     })
 
     nextApiRouter.routes()
     
     expect(resStatus).toEqual(200)
-    expect(resData).toEqual('bodyValue')
+    expect(resData).toEqual(true)
   })
 
-  it('variable paths - json body data', () => {
+  it('variable paths', () => {
     const req: any = {
-      method: 'PUT',
-      headers: {
-        "Content-Type": 'application/json'
-      },
+      method: 'GET',
       query: {
         slug: ['foo','booValue']
-      },
-      body: {
-        bodyObjectData: 'bodyValue'
       }
     }
 
     const nextApiRouter = new NextApiRouter(req, res)
 
-    nextApiRouter.put('/foo/:boo', (req, res) => {
-      const { boo } = req.query
-      const { bodyObjectData } = req.body
-      res.status(200).json({
-        pathData: boo,
-        bodyData: bodyObjectData
-      })
-    })
-
-    nextApiRouter.routes()
-    
-    expect(resStatus).toEqual(200)
-    expect(resData).toEqual({
-      pathData: 'booValue',
-      bodyData: 'bodyValue'
-    })
-  })
-
-  it('string params', () => {
-    const req: any = {
-      method: 'PUT',
-      query: {
-        slug: ['foo'],
-        boo: 'booValue'
-      }
-    }
-
-    const nextApiRouter = new NextApiRouter(req, res)
-
-    nextApiRouter.put('/foo', (req, res) => {
+    nextApiRouter.get('/foo/:boo', (req, res) => {
       const { boo } = req.query
       res.status(200).send(boo)
     })
@@ -142,27 +106,69 @@ describe('Next Api Router - Method PUT', () => {
     expect(resData).toEqual('booValue')
   })
 
-  it('string params + string params + body params', () => {
+  it('multiple variable paths', () => {
     const req: any = {
-      method: 'PUT',
+      method: 'GET',
       query: {
-        slug: ['foo', 'fooValue'],
-        boo: 'booValue'
-      },
-      body: 'bodyValue'
+        slug: ['foo','fooValue', 'boo', 'booValue']
+      }
     }
 
     const nextApiRouter = new NextApiRouter(req, res)
 
-    nextApiRouter.put('/foo/:foo', (req, res) => {
-      const { boo, foo } = req.query
-      res.status(200).send({ boo, foo, body: req.body })
+    nextApiRouter.get('/foo/:foo/boo/:boo', (req, res) => {
+      const { foo, boo } = req.query
+      res.status(200).json({ foo, boo })
     })
 
     nextApiRouter.routes()
     
     expect(resStatus).toEqual(200)
-    expect(resData).toEqual({ boo: 'booValue', foo: 'fooValue', body: 'bodyValue' })
+    expect(resData).toEqual({ foo: 'fooValue', boo: 'booValue' })
+  })
+
+  it('string params', () => {
+    const req: any = {
+      method: 'GET',
+      query: {
+        slug: ['foo'],
+        boo: 'booValue'
+      }
+    }
+
+    const nextApiRouter = new NextApiRouter(req, res)
+
+    nextApiRouter.get('/foo', (req, res) => {
+      const { boo } = req.query
+      res.status(200).send(boo)
+    })
+
+    nextApiRouter.routes()
+    
+    expect(resStatus).toEqual(200)
+    expect(resData).toEqual('booValue')
+  })
+
+  it('string params + string params', () => {
+    const req: any = {
+      method: 'GET',
+      query: {
+        slug: ['foo', 'fooValue'],
+        boo: 'booValue'
+      }
+    }
+
+    const nextApiRouter = new NextApiRouter(req, res)
+
+    nextApiRouter.get('/foo/:foo', (req, res) => {
+      const { boo, foo } = req.query
+      res.status(200).send({ boo, foo })
+    })
+
+    nextApiRouter.routes()
+    
+    expect(resStatus).toEqual(200)
+    expect(resData).toEqual({ boo: 'booValue', foo: 'fooValue' })
   })
 
 })

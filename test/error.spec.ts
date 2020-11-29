@@ -10,7 +10,11 @@ describe('Next Api Router - Error', () => {
       resStatus = code
       return this
     },
-    send(data: any) {
+    send(data: string) {
+      resData = data
+      return this
+    },
+    json(data: any) {
       resData = data
       return this
     }

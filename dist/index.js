@@ -15,84 +15,84 @@ var NextApiRouter = /** @class */ (function () {
     function NextApiRouter(req, res) {
         var method = req.method, slug = req.query.slug;
         this.slugs = slug;
-        this.method = method;
+        this.method = method.toLowerCase();
         this.response = res;
         this.request = req;
-        this.apiMap = this.generateApiMap();
+        this.hashMap = {
+            get: {},
+            post: {},
+            put: {},
+            delete: {}
+        };
     }
-    NextApiRouter.prototype.generateApiMap = function () {
-        var apiMap = new Map();
-        this.postApiMap = new Map();
-        this.getApiMap = new Map();
-        this.putApiMap = new Map();
-        this.deleteApiMap = new Map();
-        apiMap.set('POST', this.postApiMap);
-        apiMap.set('GET', this.getApiMap);
-        apiMap.set('PUT', this.putApiMap);
-        apiMap.set('DELETE', this.deleteApiMap);
-        return apiMap;
+    NextApiRouter.prototype.pathValidation = function (path) {
+        return /\/\:slug(\/)?/.test(path);
     };
-    NextApiRouter.prototype.errorResponse = function (req, res, status) {
-        if (status === void 0) { status = 500; }
-        res.status(status).send("error");
+    NextApiRouter.prototype.errorResponse = function (status) {
+        this.response.status(status).send("error");
+    };
+    NextApiRouter.prototype.addRequestPathParams = function (url) {
+        var _this = this;
+        var newRequest = __assign({}, this.request);
+        url.replace(/^(\/api\/|\/)|(\/)$/g, '').split('/').forEach(function (path, i) {
+            var _a;
+            if (path[0] !== ':')
+                return;
+            var newQuery = (_a = {}, _a[path.substr(1)] = _this.slugs[i], _a);
+            newRequest.query = __assign(__assign({}, newRequest.query), newQuery);
+        });
+        return newRequest;
+    };
+    NextApiRouter.prototype.apiPathFilter = function (apiHashMap) {
+        var _this = this;
+        return Object.keys(apiHashMap).filter(function (path) {
+            var apiSlugs = path.replace(/^(\/api\/|\/)|(\/)$/g, '').split('/');
+            var apiSlugLen = apiSlugs.length;
+            if (apiSlugLen !== _this.slugs.length)
+                return false;
+            for (var i = 0; i < apiSlugLen; i++) {
+                if (apiSlugs[i][0] !== ':' && apiSlugs[i] !== _this.slugs[i])
+                    return false;
+            }
+            return true;
+        });
     };
     NextApiRouter.prototype.post = function (url, api) {
-        this.postApiMap.set(url, api);
+        var _a;
+        this.hashMap.post = __assign(__assign({}, this.hashMap.post), (_a = {}, _a[url] = api, _a));
         return this;
     };
     NextApiRouter.prototype.get = function (url, api) {
-        this.getApiMap.set(url, api);
+        var _a;
+        this.hashMap.get = __assign(__assign({}, this.hashMap.get), (_a = {}, _a[url] = api, _a));
         return this;
     };
     NextApiRouter.prototype.put = function (url, api) {
-        this.putApiMap.set(url, api);
+        var _a;
+        this.hashMap.put = __assign(__assign({}, this.hashMap.put), (_a = {}, _a[url] = api, _a));
         return this;
     };
     NextApiRouter.prototype.delete = function (url, api) {
-        this.deleteApiMap.set(url, api);
+        var _a;
+        this.hashMap.delete = __assign(__assign({}, this.hashMap.delete), (_a = {}, _a[url] = api, _a));
         return this;
     };
     NextApiRouter.prototype.routes = function () {
-        var _this = this;
-        var targetMethodAPI = this.apiMap.get(this.method);
-        var variable = {};
-        var targetAPI;
-        var request = this.request;
-        try {
-            targetMethodAPI.forEach(function (value, key) {
-                var apiSlugs = key.replace(/^(\/api\/|\/)/, '').split('/');
-                var apiSlugLen = apiSlugs.length;
-                if (apiSlugLen !== _this.slugs.length)
-                    return;
-                for (var i = 0; i < apiSlugLen; i++) {
-                    var nowApiSlug = apiSlugs[i];
-                    var nowSlug = _this.slugs[i];
-                    if (nowApiSlug[0] === ':') {
-                        var varKey = nowApiSlug.substr(1);
-                        if (varKey === 'slug') {
-                            targetAPI = _this.errorResponse;
-                            console.log(new Error("'slug' cannot be used as a key for query string."));
-                            throw new Error("error");
-                        }
-                        variable[varKey] = nowSlug;
-                    }
-                    else {
-                        if (nowApiSlug !== nowSlug) {
-                            variable = {};
-                            return;
-                        }
-                    }
-                }
-                if (Object.keys(variable).length)
-                    request.query = __assign(__assign({}, request.query), variable);
-                targetAPI = value;
-                throw new Error('break');
-            });
+        var _a;
+        var apiHashMap = ((_a = this.hashMap) === null || _a === void 0 ? void 0 : _a[this.method]) || {};
+        var filterApiPath = this.apiPathFilter(apiHashMap);
+        var targetApiLen = filterApiPath.length;
+        if (targetApiLen === 0) {
+            return this.errorResponse(404);
         }
-        catch (_a) { }
-        if (!targetAPI)
-            return this.errorResponse(request, this.response, 404);
-        return targetAPI(request, this.response);
+        var targetApiUrl = filterApiPath[targetApiLen - 1];
+        if (this.pathValidation(targetApiUrl)) {
+            console.error("'slug' cannot be used as a key for query string.");
+            return this.errorResponse(500);
+        }
+        var targetApi = apiHashMap[targetApiUrl];
+        var request = this.addRequestPathParams(targetApiUrl);
+        return targetApi(request, this.response);
     };
     return NextApiRouter;
 }());
